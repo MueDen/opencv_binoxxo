@@ -4,25 +4,29 @@
 <meta charset="utf-8">
 <title>Puzzler</title>
 <script defer src="script.js"></script>
+<script defer src="utils.js"></script>
 <script src="opencv.js" type="text/javascript"></script>
 <style>
-    .hidden {
-        display: none;
-    }
+
     body {
-        margin: 0;
+        margin-top: 10;
         padding: 0;
-        width: 100vw;
-        height: 100vw; 
+        /* width: 100vw; */
+        height: 100vh; 
         display: flex;
         flex-direction: column;
-        justify-content:center;
+        justify-content:start;
         align-items:center;
     }
     button {
         padding: 10px;
-        margin: 5px;
     }
+    video, canvas  {
+        display: none;
+
+    }
+
+
 
 </style>
 </head>
@@ -32,8 +36,10 @@
     </div>
     <div id="initial">
         <h2>Select Puzzle to solve</h2> -->
-        <video id="video" width="720" height="560" autoplay muted></video>
+        <button onclick="startStream()">Start Streaming</button>
+        <video id="video" width="720" height="560" autoplay muted ></video>
         <canvas id="canvasFrame"></canvas>
+        <button onclick="stopStream()">Stop Streaming</button>
         <!-- <button onclick="binoxxoButtonPressed()">Binoxxo</button>
         <button onclick="sudokuButtonPressed()">Sudoku</button>
     </div> -->
