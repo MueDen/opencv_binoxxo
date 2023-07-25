@@ -14,7 +14,7 @@ let canvasFrame = document.getElementById("canvasFrame"); // canvasFrame is the 
 let context = canvasFrame.getContext("2d");
 const FPS = 30;
 function processVideo() {
-    let dst = new cv.Mat.zeros(height, width, cv.CV_8UC3);
+    let dst = new cv.Mat.zeros(height, width, cv.CV_8UC4);
     let src = new cv.Mat(height, width, cv.CV_8UC4);
     if(!streaming){
         return;

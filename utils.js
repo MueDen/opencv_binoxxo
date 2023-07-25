@@ -3,13 +3,14 @@ let once = false;
 const preProcessing = ({source: src, destination: dst}) => {
 
     // apply gaussian blur and grayscale to simplify image information
+    // src.copyTo(dst);
     cv.GaussianBlur(src, src, new cv.Size(5,5), 0); 
     let gray = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
 
     let mask = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC1);
-    
     let close = new cv.Mat();
+    
     // Kernel for morphological transformation
     let kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(11,11));
     cv.morphologyEx(gray, close, cv.MORPH_CLOSE, kernel);
@@ -50,6 +51,76 @@ const preProcessing = ({source: src, destination: dst}) => {
 
     let dx = new cv.Mat();
     cv.Sobel(normalized, dx, cv.CV_16S,1,0);
+    cv.convertScaleAbs(dx, dx);
+    cv.normalize(dx, dx, 0, 255, cv.NORM_MINMAX);
+    cv.threshold(dx, close, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU);
+    cv.morphologyEx(close, close, cv.MORPH_DILATE, kernelx);
+
+    cv.findContours(close, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    for (let i = 0; i < contours.size(); ++i) {
+        let rec = new cv.Rect();
+        rec = cv.boundingRect(contours.get(i));
+        if (rec.height / rec.width > 10){
+            cv.drawContours(close,contours,i,new cv.Scalar(255,255,255), -1);
+        } else {
+            cv.drawContours(close,contours,i,new cv.Scalar(0,0,0), -1);
+        }
+    }
+    cv.morphologyEx(close, close, cv.MORPH_CLOSE, new cv.Mat(), new cv.Point(-1,-1), 2);
+    let closex = new cv.Mat();
+    close.copyTo(closex);
+
+    let kernely = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(10,2));
+    let dy = new cv.Mat();
+    cv.Sobel(normalized, dy, cv.CV_16S,0,2);
+    cv.convertScaleAbs(dy, dy);
+    cv.normalize(dy, dy, 0, 255, cv.NORM_MINMAX);
+    cv.threshold(dy, close, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU);
+    cv.morphologyEx(close, close, cv.MORPH_DILATE, kernely);
+
+    cv.findContours(close, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    for (let i = 0; i < contours.size(); ++i) {
+        let rec = new cv.Rect();
+        rec = cv.boundingRect(contours.get(i));
+        if (rec.width / rec.height > 10){
+            cv.drawContours(close,contours,i,new cv.Scalar(255,255,255), -1);
+        } else {
+            cv.drawContours(close,contours,i,new cv.Scalar(0,0,0), -1);
+        }
+    }
+
+    cv.morphologyEx(close, close, cv.MORPH_DILATE, new cv.Mat(), new cv.Point(-1,-1), 2);
+    let closey = new cv.Mat();
+    close.copyTo(closey);
+
+    cv.bitwise_and(closex, closey, normalized);
+
+    cv.findContours(normalized, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+    
+    let centroids = [];
+
+    for (let i = 0; i < contours.size(); ++i) {
+        let mom = cv.moments(contours.get(i));
+        let p = new cv.Point((mom.m10 / mom.m00), (mom.m01/mom.m00));
+        cv.circle(src, p, 10, new cv.Scalar(255, 255, 0), -1);
+        centroids.push(p);
+    }
+    src.copyTo(dst);
+
+
+    let reArr = [];
+
+    while(centroids.length) reArr.push(centroids.splice(0,121));
+
+    if(reArr.length > 0){
+        console.log(reArr);
+        once = true;
+    }
+
+
+
 
 
 }
